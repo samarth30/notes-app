@@ -1,0 +1,1 @@
+console.log("client side file is loaded");
