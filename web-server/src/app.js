@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
 const hbs = require('hbs');
+const geocode = require('./util/geocode.js');
+const forcast = require('./util/forcast.js'); 
 
 const app = express();
 
@@ -50,18 +52,39 @@ app.get('/help',(req,res)=>{
 
 // command created with json array and two objects
 app.get('/weather',(req,res)=>{
-    res.send(
-        [
-          {
-             name:"samarth",
-             age:'19' 
-          },
-          {
-             city:"panipat",
-             location:24 
-          }  
-        ]
-    )
+    if(!req.query.address){
+        return res.send({
+            error:"please provide adress of weather"
+        })
+    }
+    geocode(req.query.address,(error,{lattitude,longitude,location}={})=>{
+         if(error){
+             return res.send({error})
+         }
+  
+         forcast(lattitude,longitude,(error,forcastData)=>{
+             if(error){
+                 return res.send({error})
+             }
+             res.send({
+                 forcast:forcastData,
+                 location,
+                 address:req.query.address
+                })
+         })
+    })
+})
+
+app.get('/products',(req,res)=>{
+    if(!req.query.search){
+        return res.send({
+            error:'you must provide search term'
+        })
+    }
+    console.log(req.query.search);
+    res.send({
+        products:[]
+    })
 })
 
 app.get("/help/*",(req,res)=>{
@@ -84,3 +107,4 @@ app.get('*',(req,res)=>{
 app.listen(3000,()=>{
   console.log("the server is on port 3000");
 });
+
